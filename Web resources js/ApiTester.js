@@ -221,4 +221,3 @@ function groupByDayAnd_createdby_value(rawData, month, year) {
 
 
 
-

@@ -5,15 +5,15 @@ TimeSheetLibraryScript = {
         var pageInput = {
             pageType: "webresource",
             webresourceName: "new_ExportExcel"
-          };
-          var navigationOptions = {
+        };
+        var navigationOptions = {
             target: 2,
             width: 450, // value specified in pixel
             height: 450, // value specified in pixel
             position: 1,
             title: "Monthly Report"
-          };
-          Xrm.Navigation.navigateTo(pageInput,navigationOptions)
+        };
+        Xrm.Navigation.navigateTo(pageInput,navigationOptions)
     },
 
 
@@ -244,67 +244,67 @@ function groupByDayAndCreatedBy(rawData, month, year) {
     // Tạo một object tạm để lưu trữ dữ liệu khi nhóm
     var temp = {};
     rawData.forEach(function (item) {
-      // Lấy ngày từ trường 'new_date'
-      var date = new Date(item.new_date);
+        // Lấy ngày từ trường 'new_date'
+        var date = new Date(item.new_date);
 
-      // Kiểm tra xem ngày này có thuộc tháng và năm đang xét hay không
-      if (date.getMonth() + 1 === month && date.getFullYear() === year) {
-        // Nếu chưa có dữ liệu cho '_createdby_value' này, khởi tạo một object mới
-        if (!temp[item._createdby_value]) {
-          temp[item._createdby_value] = {};
-          for (var i = 1; i <= totalAfter22h_index; i++) {
-            temp[item._createdby_value][i] = null;
-          }
-        }
+        // Kiểm tra xem ngày này có thuộc tháng và năm đang xét hay không
+        if (date.getMonth() + 1 === month && date.getFullYear() === year) {
+            // Nếu chưa có dữ liệu cho '_createdby_value' này, khởi tạo một object mới
+            if (!temp[item._createdby_value]) {
+                temp[item._createdby_value] = {};
+                for (var i = 1; i <= totalAfter22h_index; i++) {
+                    temp[item._createdby_value][i] = null;
+                }
+            }
 
         // Cộng dồn 'new_duration' vào ngày tương ứng trong kết quả
-        if (temp[item._createdby_value][date.getDate()]) {
-          temp[item._createdby_value][date.getDate()] += item.new_duration;
-        } else {
-          temp[item._createdby_value][date.getDate()] = item.new_duration;
-        }
+            if (temp[item._createdby_value][date.getDate()]) {
+                temp[item._createdby_value][date.getDate()] += item.new_duration;
+            } else {
+                temp[item._createdby_value][date.getDate()] = item.new_duration;
+            }
 
 
-        var status = item.new_currentstatus_;
-        if(status == CurrenStatus.Office){
-          if (temp[item._createdby_value][totalOfficeHours_index]) {
-          temp[item._createdby_value][totalOfficeHours_index] += OtHour(item);
-          } else {
-          temp[item._createdby_value][totalOfficeHours_index] = OtHour(item);
-          }
+            var status = item.new_currentstatus_;
+            if(status == CurrenStatus.Office){
+                if (temp[item._createdby_value][totalOfficeHours_index]) {
+                    temp[item._createdby_value][totalOfficeHours_index] += OtHour(item);
+                } else {
+                    temp[item._createdby_value][totalOfficeHours_index] = OtHour(item);
+                }
+            }
+            if(status == CurrenStatus.After22h){
+                if (temp[item._createdby_value][totalAfter22h_index]) {
+                    temp[item._createdby_value][totalAfter22h_index] += OtHour(item);
+                } else {
+                    temp[item._createdby_value][totalAfter22h_index] = OtHour(item);
+                }
+            }
+            if(status == CurrenStatus.Before22h){
+                if (temp[item._createdby_value][totalBefore22h_index]) {
+                    temp[item._createdby_value][totalBefore22h_index] += OtHour(item);
+                } else {
+                    temp[item._createdby_value][totalBefore22h_index] = OtHour(item);
+                }
+            }
         }
-        if(status == CurrenStatus.After22h){
-          if (temp[item._createdby_value][totalAfter22h_index]) {
-          temp[item._createdby_value][totalAfter22h_index] += OtHour(item);
-          } else {
-          temp[item._createdby_value][totalAfter22h_index] = OtHour(item);
-          }
-        }
-        if(status == CurrenStatus.Before22h){
-          if (temp[item._createdby_value][totalBefore22h_index]) {
-          temp[item._createdby_value][totalBefore22h_index] += OtHour(item);
-          } else {
-          temp[item._createdby_value][totalBefore22h_index] = OtHour(item);
-          }
-        }
-      }
     });
 
     //console.log(temp)
     // Chuyển dữ liệu từ object tạm sang mảng kết quả
     for (var key in temp) {
-      var obj = { Employee: key };
-      for (var i = 1; i <= daysInMonth; i++) {
-        obj[i] = temp[key][i];
-      }
-      obj["TotalOfficeHours"] = temp[key][totalOfficeHours_index];
-      obj["TotalBefore22h"] = temp[key][totalBefore22h_index];
-      obj["TotalAfter22h"] = temp[key][totalAfter22h_index];
-      obj["TotalWorkingHours"] = obj["TotalOfficeHours"] + obj["TotalBefore22h"] + obj["TotalAfter22h"]
-      result.push(obj);
+        var obj = { Employee: key };
+        for (var i = 1; i <= daysInMonth; i++) {
+            obj[i] = temp[key][i];
+        }
+        obj["TotalOfficeHours"] = temp[key][totalOfficeHours_index];
+        obj["TotalBefore22h"] = temp[key][totalBefore22h_index];
+        obj["TotalAfter22h"] = temp[key][totalAfter22h_index];
+        obj["TotalWorkingHours"] = obj["TotalOfficeHours"] + obj["TotalBefore22h"] + obj["TotalAfter22h"]
+        result.push(obj);
     }
     return result;
-  }
+}
 
 
 
@@ -356,7 +356,7 @@ const GetReportExcel =  async (val) => {
         let ManagerView = []
         let EmployeeView = []
 
-// Tách join table ra làm 2 view : view employee và view manager
+        // Tách join table ra làm 2 view : view employee và view manager
         for (var i = 0; i < jointabledata.length; i++) {
 
             if(current_User_Id == jointabledata[i]._ownerid_value ){
@@ -369,16 +369,14 @@ const GetReportExcel =  async (val) => {
             }
         }
         let workbook = XLSX.utils.book_new();
-// Join 3 table lại mà taa có table bị trung 2 ve created by => chỉ nên la
 
-        if (ManagerView != null) {
-
+        if (ManagerView.length > 0) {
             let result = groupByDayAndCreatedBy(ManagerView,month,year)
             let worksheet = XLSX.utils.json_to_sheet(result);
             XLSX.utils.book_append_sheet(workbook, worksheet, 'ManagerView');
         }
 
-        if (EmployeeView != null) {
+        if (EmployeeView.length > 0) {
             let result1 = groupByDayAndCreatedBy(EmployeeView,month,year)
             let worksheet = XLSX.utils.json_to_sheet(result1);
             XLSX.utils.book_append_sheet(workbook, worksheet, 'EmployeeView');
