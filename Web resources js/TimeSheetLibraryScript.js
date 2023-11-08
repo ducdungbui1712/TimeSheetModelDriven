@@ -222,15 +222,15 @@ function OtHour(item){
 	let date = new Date(item.new_date);
 	let day = date.getDay();
 	if(day >= 1 && day <= 5 && item.new_currentstatus_ == CurrenStatus.Office)
-		value = item.new_duration * item.newweekdayoffice;
+		value = item.new_duration * item.new_weekdayoffice;
 	else if (day >= 1 && day <= 5 && item.new_currentstatus_ ==  CurrenStatus.Before22h)
-		value = item.new_duration * item.newweekdaybefore22h;
+		value = item.new_duration * item.new_weekdaybefore22h;
 	else if (day >= 1 && day <= 5 && item.new_currentstatus_ ==  CurrenStatus.After22h)
-		value = item.new_duration * item.newweekdayafter22h;
+		value = item.new_duration * item.new_weekdayafter22h;
 	else if ((day === 0 || day === 6) && item.new_currentstatus_ ==  CurrenStatus.Before22h)
-		value = item.new_duration * item.newweekendbefore22h;
+		value = item.new_duration * item.new_weekendbefore22h;
 	else if ((day === 0 || day === 6) && item.new_currentstatus_ ==  CurrenStatus.After22h)
-		value = item.new_duration * item.newweekendafter22h;
+		value = item.new_duration * item.new_weekdayafter22h;
 	return value;
 }
 
@@ -240,13 +240,13 @@ function groupByDayAndCreatedBy(rawData, month, year) {
     var totalBefore22h_index = totalOfficeHours_index + 1
     var totalAfter22h_index = totalBefore22h_index + 1
     var result = [];
-  
+
     // Tạo một object tạm để lưu trữ dữ liệu khi nhóm
     var temp = {};
     rawData.forEach(function (item) {
       // Lấy ngày từ trường 'new_date'
       var date = new Date(item.new_date);
-  
+
       // Kiểm tra xem ngày này có thuộc tháng và năm đang xét hay không
       if (date.getMonth() + 1 === month && date.getFullYear() === year) {
         // Nếu chưa có dữ liệu cho '_createdby_value' này, khởi tạo một object mới
@@ -256,15 +256,15 @@ function groupByDayAndCreatedBy(rawData, month, year) {
             temp[item._createdby_value][i] = null;
           }
         }
-  
+
         // Cộng dồn 'new_duration' vào ngày tương ứng trong kết quả
         if (temp[item._createdby_value][date.getDate()]) {
           temp[item._createdby_value][date.getDate()] += item.new_duration;
         } else {
           temp[item._createdby_value][date.getDate()] = item.new_duration;
         }
-  
-  
+
+
         var status = item.new_currentstatus_;
         if(status == CurrenStatus.Office){
           if (temp[item._createdby_value][totalOfficeHours_index]) {
@@ -289,9 +289,8 @@ function groupByDayAndCreatedBy(rawData, month, year) {
         }
       }
     });
-  
+
     //console.log(temp)
-  
     // Chuyển dữ liệu từ object tạm sang mảng kết quả
     for (var key in temp) {
       var obj = { Employee: key };
@@ -306,7 +305,7 @@ function groupByDayAndCreatedBy(rawData, month, year) {
     }
     return result;
   }
-  
+
 
 
 
@@ -319,7 +318,7 @@ const GetReportExcel =  async (val) => {
 
     const VendorEmployeeApi= await Xrm.WebApi.retrieveMultipleRecords("new_vendoremployees");
 
-    const TimeSheetApi = await Xrm.WebApi.retrieveMultipleRecords("new_timesheet", `?$filter=new_status eq ${TimeSheetCurrentStatusEnum.Approved}` );
+    const TimeSheetApi = await Xrm.WebApi.retrieveMultipleRecords("new_timesheet", `?$filter=new_status eq ${TimeSheetCurrentStatusEnum.Approved}`);
 
     const TimeSheetData = [];
     const VendorEmployeeData = [];
@@ -336,13 +335,13 @@ const GetReportExcel =  async (val) => {
     for (var i = 0; i < VendorApi.entities.length; i++) {
         VendorData.push(VendorApi.entities[i])
     }
-  
-    // join 3 table TimeSheet, Vendor, VendorEmployee
-    var jointabledata = TimeSheetData.map(ts => {
-        var ve = VendorEmployeeData.find(ve => ve._new_employee_value === ts._createdby_value);
-        var v = VendorData.find(v => v.new_vendorid === ve._new_vendor_value );
-        return {...ts, ...ve, ...v};
-    });
+
+        // join 3 table TimeSheet, Vendor, VendorEmployee
+        var jointabledata = TimeSheetData.map(ts => {
+            var ve = VendorEmployeeData.find(ve => ve._new_employee_value === ts._createdby_value);
+            var v = VendorData.find(v => v.new_vendorid === ve._new_vendor_value );
+            return { ...ts, ...ve, ...v, _createdby_value: ts._createdby_value, _ownerid_value: ts._ownerid_value };
+        });
 
     console.log(JSON.stringify(jointabledata));
 
@@ -357,8 +356,9 @@ const GetReportExcel =  async (val) => {
         let ManagerView = []
         let EmployeeView = []
 
+// Tách join table ra làm 2 view : view employee và view manager
         for (var i = 0; i < jointabledata.length; i++) {
-            //console.log(result.entities[i]);
+
             if(current_User_Id == jointabledata[i]._ownerid_value ){
                 ManagerView.push(jointabledata[i]);
             }
@@ -369,6 +369,7 @@ const GetReportExcel =  async (val) => {
             }
         }
         let workbook = XLSX.utils.book_new();
+// Join 3 table lại mà taa có table bị trung 2 ve created by => chỉ nên la
 
         if (ManagerView != null) {
 
