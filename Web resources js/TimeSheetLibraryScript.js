@@ -209,18 +209,98 @@ const updateRecord = async (IDRecord,data) => {
     return result
 }
 
-const GetReportExcel =  () => {
+
+
+
+function groupByDayAndCreatedBy(rawData, month, year) {
+    var daysInMonth = new Date(year, month, 0).getDate();
+    var result = [];
+
+    // Tạo một object tạm để lưu trữ dữ liệu khi nhóm
+    var temp = {};
+    rawData.forEach(function(item) {
+        // Lấy ngày từ trường 'new_date'
+        var date = new Date(item.new_date);
+        
+        // Kiểm tra xem ngày này có thuộc tháng và năm đang xét hay không
+        if (date.getMonth() + 1 === month && date.getFullYear() === year) {
+            // Nếu chưa có dữ liệu cho 'createdby' này, khởi tạo một object mới
+            if (!temp[item._createdby_value]) {
+                temp[item._createdby_value] = { createdby: item._createdby_value };
+                for (var i = 1; i <= daysInMonth; i++) {
+                    temp[item._createdby_value][i] = null;
+                }
+            }
+
+            // Cộng dồn 'new_duration' vào ngày tương ứng trong kết quả
+            if (temp[item._createdby_value][date.getDate()]) {
+                temp[item._createdby_value][date.getDate()] += item.new_duration;
+            } else {
+                temp[item._createdby_value][date.getDate()] = item.new_duration;
+            }
+        }
+    });
+
+    // Chuyển dữ liệu từ object tạm sang mảng kết quả
+    for (var key in temp) {
+        result.push(temp[key]);
+    }
+
+    return result;
+}
+
+
+
+
+// Export data from TimeSheet to Excel
+const GetReportExcel =  async (val) => {
+    console.log("Month and year: ",val);
+    const VendorApi  = await(await Xrm.WebApi.retrieveMultipleRecords("new_vendor")) ;
+
+    const VendorEmployeeApi= await Xrm.WebApi.retrieveMultipleRecords("new_vendoremployees");
+
+    const TimeSheetApi = await Xrm.WebApi.retrieveMultipleRecords("new_timesheet", `?$filter=new_status eq ${TimeSheetCurrentStatusEnum.Approved}` );
+
+    const TimeSheetData = [];
+    const VendorEmployeeData = [];
+    const VendorData = [];
+
+    for (var i = 0; i < VendorApi.entities.length; i++) {
+        TimeSheetData.push(VendorApi.entities[i])
+    }
+
+    for (var i = 0; i < VendorEmployeeApi.entities.length; i++) {
+        VendorEmployeeData.push(VendorEmployeeApi.entities[i])
+    }
+
+    for (var i = 0; i < TimeSheetApi.entities.length; i++) {
+        VendorData.push(TimeSheetApi.entities[i])
+    }
+  
+
+    var jointabledata = TimeSheetData.map(ts => {
+        var ve = VendorEmployeeData.find(ve => ve._new_employee_value === ts._createdby_value);
+        var v = VendorData.find(v => v.new_vendorid === ve._new_vendor_value );
+        return {...ts, ...ve, ...v};
+    });
+
+    console.log(JSON.stringify(jointabledata));
+
+    var parts = val.split("-");
+    var year = Number(parts[0]);
+    var month = Number(parts[1]);
 
     var userSettings =  Xrm.Utility.getGlobalContext().userSettings; // userSettings is an object with user information.
     var current_User_Id = String(userSettings.userId).toLowerCase().replace(/[{}]/g, ''); // The user's unique id
     console.log(current_User_Id)
 
-    Xrm.WebApi.retrieveMultipleRecords("new_timesheet", `?$filter=new_status eq ${TimeSheetCurrentStatusEnum.Approved}` ).then(
-        function success(result) {
+    const result = await Xrm.WebApi.retrieveMultipleRecords("new_timesheet", `?$filter=new_status eq ${TimeSheetCurrentStatusEnum.Approved}` );
+
             let ManagerView = []
-            let EmployeeView=[]
+            let EmployeeView = []
+
             for (var i = 0; i < result.entities.length; i++) {
-                console.log(result.entities[i]);
+                //console.log(result.entities[i]);
                 if(current_User_Id == result.entities[i]._ownerid_value ){
                     ManagerView.push(result.entities[i]);
                 }
@@ -230,29 +310,27 @@ const GetReportExcel =  () => {
                     }
                 }
             }
-
-
-            
             let workbook = XLSX.utils.book_new();
+
             if (ManagerView != null) {
-                let worksheet = XLSX.utils.json_to_sheet(ManagerView);
+
+                let result = groupByDayAndCreatedBy(ManagerView,month,year)
+                let worksheet = XLSX.utils.json_to_sheet(result);
                 XLSX.utils.book_append_sheet(workbook, worksheet, 'ManagerView');
             }
 
             if (EmployeeView != null) {
-                let worksheet = XLSX.utils.json_to_sheet(EmployeeView);
+                let result1 = groupByDayAndCreatedBy(EmployeeView,month,year)
+                let worksheet = XLSX.utils.json_to_sheet(result1);
                 XLSX.utils.book_append_sheet(workbook, worksheet, 'EmployeeView');
             }
+            // Calculate Time Working
 
             XLSX.writeFile(workbook, 'output.xlsx');
             window.close();
-            console.log("manager: ", ManagerView);
-            console.log("employee: ", EmployeeView);
-            
-        },
-        function (error) {
-            console.log(error.message);
-            // handle error conditions
-        }
-    );
+           // console.log("manager: ", ManagerView);
+            //console.log("employee: ", EmployeeView);
+
+
 }
+
