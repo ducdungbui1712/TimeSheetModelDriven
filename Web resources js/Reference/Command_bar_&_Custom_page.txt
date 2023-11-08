@@ -1,0 +1,20 @@
+
+
+Youtube:{
+	Search key:{
+		openform (client api reference) powerapps model driven
+		custom page in model driven app	
+	}
+
+	https://www.youtube.com/watch?v=rT48jpBbuJY
+	https://www.youtube.com/watch?v=NCH8KU67W08
+	https://www.youtube.com/watch?v=yQ3Op-yH9FA
+}
+
+Browse:{
+	https://learn.microsoft.com/en-us/power-apps/maker/model-driven-apps/use-command-designer
+	https://powerusers.microsoft.com/t5/Building-Power-Apps/How-to-show-multiple-selected-items-on-custom-page/td-p/1895544
+	https://learn.microsoft.com/en-us/power-apps/developer/model-driven-apps/clientapi/reference/xrm-navigation
+	https://learn.microsoft.com/en-us/power-apps/developer/model-driven-apps/clientapi/navigate-to-custom-page-examples#open-as-a-centered-dialog
+	https://www.matthewdevaney.com/power-apps-custom-page-modal-dialog-for-model-driven-apps/
+}

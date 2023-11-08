@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<body>
+    <script src="ClientGlobalContext.js.aspx" type="text/javascript" ></script>
+    <!-- use version 0.20.0 -->
+    <script lang="javascript" src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+    <script lang="javascript" src="https://org70c18e95.crm5.dynamics.com/WebResources/new_TimeSheetLibraryScript"></script>
+    
+    <form action="success" method="post">
+        <label for="date">Chosing Date:</label>
+        <input  type="date" id="date" name="date">
+        <br><br>
+        <button type="button" onclick="GetReportExcel()">Export</button>
+        <button type="button" onclick="Cancel()">Cancel</button>
+      </form>
+
+      <script>
+        function Cancel(){
+            window.close()
+        }
+    </script>
+</body>
+
+</html>
