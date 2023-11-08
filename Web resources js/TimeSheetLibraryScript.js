@@ -253,6 +253,7 @@ function groupByDayAndCreatedBy(rawData, month, year) {
 
 
 // Export data from TimeSheet to Excel
+// Get the val parameter from ExportExcel.html web resource
 const GetReportExcel =  async (val) => {
     console.log("Month and year: ",val);
     const VendorApi  = await(await Xrm.WebApi.retrieveMultipleRecords("new_vendor")) ;
@@ -265,19 +266,19 @@ const GetReportExcel =  async (val) => {
     const VendorEmployeeData = [];
     const VendorData = [];
 
-    for (var i = 0; i < VendorApi.entities.length; i++) {
-        TimeSheetData.push(VendorApi.entities[i])
+    for (var i = 0; i < TimeSheetApi.entities.length; i++) {
+        TimeSheetData.push(TimeSheetApi.entities[i])
     }
 
     for (var i = 0; i < VendorEmployeeApi.entities.length; i++) {
         VendorEmployeeData.push(VendorEmployeeApi.entities[i])
     }
 
-    for (var i = 0; i < TimeSheetApi.entities.length; i++) {
-        VendorData.push(TimeSheetApi.entities[i])
+    for (var i = 0; i < VendorApi.entities.length; i++) {
+        VendorData.push(VendorApi.entities[i])
     }
   
-
+    // join 3 table TimeSheet, Vendor, VendorEmployee
     var jointabledata = TimeSheetData.map(ts => {
         var ve = VendorEmployeeData.find(ve => ve._new_employee_value === ts._createdby_value);
         var v = VendorData.find(v => v.new_vendorid === ve._new_vendor_value );

@@ -8,11 +8,32 @@ var timesheet = [
     new_date: "2023-10-17",
     new_currentstatus: "Office",
   },
+
   {
     createdby: "Dung",
     new_duration: 8,
     new_date: "2023-10-11",
-    new_currentstatus: "Before22h",
+    new_currentstatus: "Office",
+  },
+
+  {
+    createdby: "Dung",
+    new_duration: 3,
+    new_date: "2023-10-11",
+    new_currentstatus: "After22h",
+  },
+  {
+    createdby: "Dung",
+    new_duration: 8,
+    new_date: "2023-10-12",
+    new_currentstatus: "Office",
+  },
+
+  {
+    createdby: "Dung",
+    new_duration: 2,
+    new_date: "2023-10-12",
+    new_currentstatus: "After22h",
   },
   {
     createdby: "Hao",
@@ -24,7 +45,7 @@ var timesheet = [
     createdby: "Khang",
     new_duration: 8,
     new_date: "2023-08-11",
-    new_currentstatus: "Before22h",
+    new_currentstatus: "After22h",
   },
 ];
 
@@ -58,6 +79,9 @@ var vendor = [
 
 function groupByDayAndCreatedBy(rawData, month, year) {
   var daysInMonth = new Date(year, month, 0).getDate();
+  var totalOfficeHours_index = daysInMonth + 1
+  var totalBefore22h_index = totalOfficeHours_index + 1
+  var totalAfter22h_index = totalBefore22h_index + 1
   var result = [];
 
   // Tạo một object tạm để lưu trữ dữ liệu khi nhóm
@@ -71,7 +95,7 @@ function groupByDayAndCreatedBy(rawData, month, year) {
       // Nếu chưa có dữ liệu cho 'createdby' này, khởi tạo một object mới
       if (!temp[item.createdby]) {
         temp[item.createdby] = {};
-        for (var i = 1; i <= daysInMonth; i++) {
+        for (var i = 1; i <= totalAfter22h_index; i++) {
           temp[item.createdby][i] = null;
         }
       }
@@ -82,8 +106,34 @@ function groupByDayAndCreatedBy(rawData, month, year) {
       } else {
         temp[item.createdby][date.getDate()] = item.new_duration;
       }
+
+
+      var status = item.new_currentstatus;
+      if(status == "Office"){
+        if (temp[item.createdby][totalOfficeHours_index]) {
+        temp[item.createdby][totalOfficeHours_index] += item.new_duration;
+        } else {
+        temp[item.createdby][totalOfficeHours_index] = item.new_duration;
+        }
+      }
+      if(status == "After22h"){
+        if (temp[item.createdby][totalAfter22h_index]) {
+        temp[item.createdby][totalAfter22h_index] += item.new_duration;
+        } else {
+        temp[item.createdby][totalAfter22h_index] = item.new_duration;
+        }
+      }
+      if(status == "Before22h"){
+        if (temp[item.createdby][totalBefore22h_index]) {
+        temp[item.createdby][totalBefore22h_index] += item.new_duration;
+        } else {
+        temp[item.createdby][totalBefore22h_index] = item.new_duration;
+        }
+      }
     }
   });
+
+  console.log(temp)
 
   // Chuyển dữ liệu từ object tạm sang mảng kết quả
   for (var key in temp) {
@@ -91,9 +141,11 @@ function groupByDayAndCreatedBy(rawData, month, year) {
     for (var i = 1; i <= daysInMonth; i++) {
       obj[i] = temp[key][i];
     }
+    obj["TotalOfficeHours"] = temp[key][totalOfficeHours_index];
+    obj["TotalBefore22h"] = temp[key][totalBefore22h_index];
+    obj["TotalAfter22h"] = temp[key][totalAfter22h_index];
     result.push(obj);
   }
-
   return result;
 }
 
@@ -103,6 +155,6 @@ var result = timesheet.map((ts) => {
   return { ...ts, ...ve, ...v };
 });
 
-console.log(result);
+// console.log(timesheet);
 
-//console.log(groupByDayAndCreatedBy(timesheet, 10, 2023));
+console.log(groupByDayAndCreatedBy(timesheet, 10, 2023));
