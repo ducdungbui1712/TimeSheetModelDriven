@@ -8,14 +8,22 @@
     <script lang="javascript" src="https://org70c18e95.crm5.dynamics.com/WebResources/new_TimeSheetLibraryScript"></script>
     
     <form action="success" method="post">
-        <label for="date">Chosing Date:</label>
-        <input  type="date" id="date" name="date">
+        <label for="month">Chosing Month And Year:</label>
+        <input  type="month" id="month" name="month">
         <br><br>
-        <button type="button" onclick="GetReportExcel()">Export</button>
+        <button type="button" onclick="ExportToExcel()">Export</button>
         <button type="button" onclick="Cancel()">Cancel</button>
       </form>
 
       <script>
+            let val = document.getElementById("month").value;
+            window.returnValue=val;
+
+        function ExportToExcel(){
+           let val = document.getElementById("month").value;
+           window.returnValue=val;
+           GetReportExcel(window.returnValue);
+        }
         function Cancel(){
             window.close()
         }
@@ -23,3 +31,4 @@
 </body>
 
 </html>
+
