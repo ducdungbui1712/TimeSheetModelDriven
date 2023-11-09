@@ -4,7 +4,7 @@ TimeSheetLibraryScript = {
     ExportExcel: function(){
         var pageInput = {
             pageType: "webresource",
-            webresourceName: "new_ExportExcel"
+            webresourceName: "new_MonthPicker"
           };
           var navigationOptions = {
             target: 2,
