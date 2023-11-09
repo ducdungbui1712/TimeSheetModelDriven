@@ -4,15 +4,9 @@ TimeSheetLibraryScript = {
     ExportExcel: function(){
         var pageInput = {
             pageType: "webresource",
-<<<<<<< HEAD
             webresourceName: "new_MonthPicker"
           };
           var navigationOptions = {
-=======
-            webresourceName: "new_ExportExcel"
-        };
-        var navigationOptions = {
->>>>>>> aa93bb2151bd85311db19eb1c4c6e9634b40e269
             target: 2,
             width: 450, // value specified in pixel
             height: 450, // value specified in pixel
@@ -320,6 +314,10 @@ function groupByDayAndCreatedBy(rawData, month, year) {
 // Get the val parameter from ExportExcel.html web resource
 const GetReportExcel =  async (val) => {
     console.log("Month and year: ",val);
+    const date = new Date(val.toLocaleString());
+    const month = Number(date.getMonth() + 1); // getMonth() returns month from 0 to 11, so we add 1 to get the correct month number
+    const year = Number(date.getFullYear());
+    console.log("month,year", month,year)
     const VendorApi  = await(await Xrm.WebApi.retrieveMultipleRecords("new_vendor")) ;
 
     const VendorEmployeeApi= await Xrm.WebApi.retrieveMultipleRecords("new_vendoremployees");
@@ -350,10 +348,6 @@ const GetReportExcel =  async (val) => {
         });
 
     console.log(JSON.stringify(jointabledata));
-
-    var parts = val.split("-");
-    var year = Number(parts[0]);
-    var month = Number(parts[1]);
 
     var userSettings =  Xrm.Utility.getGlobalContext().userSettings; // userSettings is an object with user information.
     var current_User_Id = String(userSettings.userId).toLowerCase().replace(/[{}]/g, ''); // The user's unique id

@@ -44,20 +44,19 @@ console.log("current user is:",current_User_Id); */
 // Return to View React
 return React.createElement(
 "div",
-{ style: {  display: "flex", justifyContent: "center", gap: "2em" ,width: "100%"} },
+{ style: {  display: "flex", justifyContent: "center", gap: "2em" } },
 React.createElement(
 "div",
-{ style: { marginTop: "10px", display: "flex", flexDirection: "column", gap: "1.5em" , width: "30%"} },
+{ style: { marginTop: "10px", display: "flex", flexDirection: "column", gap: "1.5em" } },
 React.createElement(PrimaryButton, { onClick: onExportClick, text: "Export All" }),
 React.createElement(DefaultButton, { onClick: onCancelClick, text: "Export Your Profile" }),
 React.createElement(DefaultButton, { onClick: onCancelClick, text: "Cancel" })
 ),
 React.createElement(
 "div",
-{ style: {marginTop: "10px", display: "flex", alignItems: "center", justifyContent: "center",width: "70%", height: "100%", flexDirection: "column"} },
+{ style: {marginTop: "10px", display: "flex", alignItems: "center", justifyContent: "center", height: "100%", flexDirection: "column"} },
 React.createElement(
   "div",
-
   { ref: buttonContainerRef },
   React.createElement(DefaultButton, {
     onClick: toggleShowCalendar,
