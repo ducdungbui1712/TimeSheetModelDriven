@@ -5,8 +5,8 @@ TimeSheetLibraryScript = {
         var pageInput = {
             pageType: "webresource",
             webresourceName: "new_MonthPicker"
-          };
-          var navigationOptions = {
+        };
+        var navigationOptions = {
             target: 2,
             width: 450, // value specified in pixel
             height: 450, // value specified in pixel
@@ -234,6 +234,11 @@ function OtHour(item){
 	return value;
 }
 
+function isWeekend(date) {
+    const day = date.getDay();
+    return day === 0 || day === 6;  
+}
+
 function groupByDayAndCreatedBy(rawData, month, year) {
     var daysInMonth = new Date(year, month, 0).getDate();
     var totalOfficeHours_index = daysInMonth + 1
@@ -264,7 +269,6 @@ function groupByDayAndCreatedBy(rawData, month, year) {
                 temp[item._createdby_value][date.getDate()] = item.new_duration;
             }
 
-
             var status = item.new_currentstatus_;
             if(status == CurrenStatus.Office){
                 if (temp[item._createdby_value][totalOfficeHours_index]) {
@@ -289,14 +293,25 @@ function groupByDayAndCreatedBy(rawData, month, year) {
             }
         }
     });
-
-    //console.log(temp)
+    
     // Chuyển dữ liệu từ object tạm sang mảng kết quả
     for (var key in temp) {
         var obj = { Employee: key };
+        // Days in month columns
         for (var i = 1; i <= daysInMonth; i++) {
-            obj[i] = temp[key][i];
+            
+            const date = new Date(year, month-1, i);
+            
+            if (isWeekend(date)) {
+                // Nếu là cuối tuần, set màu nền cho cột
+                obj[i] = { value: temp[key][i], fill: { fgColor: { rgb: 'FF0000' } } }; 
+            } else {
+                // Không phải cuối tuần, giữ nguyên
+                obj[i] = temp[key][i];
+            }
+
         }
+        // Total columns
         obj["TotalOfficeHours"] = temp[key][totalOfficeHours_index];
         obj["TotalBefore22h"] = temp[key][totalBefore22h_index];
         obj["TotalAfter22h"] = temp[key][totalAfter22h_index];
@@ -317,7 +332,8 @@ const GetReportExcel =  async (val, check) => {
     const date = new Date(val.toLocaleString());
     const month = Number(date.getMonth() + 1); // getMonth() returns month from 0 to 11, so we add 1 to get the correct month number
     const year = Number(date.getFullYear());
-    console.log("month,year", month,year)
+    // console.log("month,year", month,year)
+
     const VendorApi  = await(await Xrm.WebApi.retrieveMultipleRecords("new_vendor")) ;
 
     const VendorEmployeeApi= await Xrm.WebApi.retrieveMultipleRecords("new_vendoremployees");
@@ -347,7 +363,7 @@ const GetReportExcel =  async (val, check) => {
             return { ...ts, ...ve, ...v, _createdby_value: ts._createdby_value, _ownerid_value: ts._ownerid_value };
         });
 
-    console.log(JSON.stringify(jointabledata));
+    // console.log(JSON.stringify(jointabledata));
 
     var userSettings =  Xrm.Utility.getGlobalContext().userSettings; // userSettings is an object with user information.
     var current_User_Id = String(userSettings.userId).toLowerCase().replace(/[{}]/g, ''); // The user's unique id
@@ -374,21 +390,32 @@ const GetReportExcel =  async (val, check) => {
         if (ManagerView.length > 0) {
             let result = groupByDayAndCreatedBy(ManagerView,month,year)
             let worksheet = XLSX.utils.json_to_sheet(result);
+            result.forEach(obj => {
+                Object.keys(obj).forEach(key => {
+                    if (obj[key]?.fill) {
+                        // worksheet[key].s = obj[key].fill; 
+                    }
+                })
+            });
             XLSX.utils.book_append_sheet(workbook, worksheet, 'ManagerView');
         }
-
         if (EmployeeView.length > 0) {
             let result1 = groupByDayAndCreatedBy(EmployeeView,month,year)
+            // console.log(result1)
             let worksheet = XLSX.utils.json_to_sheet(result1);
+            result1.forEach(obj => {
+                // console.log(obj)
+                // console.log(Object.keys(obj))
+                Object.keys(obj).forEach(key => {
+                    // console.log(key)
+                    if (obj[key]?.fill) {
+                        // worksheet[key].s = obj[key].fill;
+                    }
+                })
+            });
             XLSX.utils.book_append_sheet(workbook, worksheet, 'EmployeeView');
         }
-        // Calculate Time Working
-
         XLSX.writeFile(workbook, 'output.xlsx');
         window.close();
-        // console.log("manager: ", ManagerView);
-        //console.log("employee: ", EmployeeView);
-
-
 }
 
