@@ -304,7 +304,15 @@ function groupByDayAndCreatedBy(rawData, month, year) {
             
             if (isWeekend(date)) {
                 // Nếu là cuối tuần, set màu nền cho cột
-                obj[i] = { value: temp[key][i], fill: { fgColor: { rgb: 'FF0000' } } }; 
+                obj[i] = 
+                {  
+                    value: temp[key][i], 
+                    fill:{
+                        patternType:"solid",
+                        fgColor:{ rgb: "00dce6f1" },
+                        bgColor:{ rgb: "00dce6f1" } 
+                    }
+                }; 
             } else {
                 // Không phải cuối tuần, giữ nguyên
                 obj[i] = temp[key][i];
@@ -387,18 +395,18 @@ const GetReportExcel =  async (val, check) => {
         }
         let workbook = XLSX.utils.book_new();
 
-        if (ManagerView.length > 0) {
-            let result = groupByDayAndCreatedBy(ManagerView,month,year)
-            let worksheet = XLSX.utils.json_to_sheet(result);
-            result.forEach(obj => {
-                Object.keys(obj).forEach(key => {
-                    if (obj[key]?.fill) {
-                        // worksheet[key].s = obj[key].fill; 
-                    }
-                })
-            });
-            XLSX.utils.book_append_sheet(workbook, worksheet, 'ManagerView');
-        }
+        // if (ManagerView.length > 0) {
+        //     let result = groupByDayAndCreatedBy(ManagerView,month,year)
+        //     let worksheet = XLSX.utils.json_to_sheet(result);
+        //     result.forEach(obj => {
+        //         Object.keys(obj).forEach(key => {
+        //             if (obj[key]?.fill) {
+        //                 // worksheet[key].s = obj[key].fill; 
+        //             }
+        //         })
+        //     });
+        //     XLSX.utils.book_append_sheet(workbook, worksheet, 'ManagerView');
+        // }
         if (EmployeeView.length > 0) {
             let result1 = groupByDayAndCreatedBy(EmployeeView,month,year)
             // console.log(result1)
@@ -409,7 +417,29 @@ const GetReportExcel =  async (val, check) => {
                 Object.keys(obj).forEach(key => {
                     // console.log(key)
                     if (obj[key]?.fill) {
-                        // worksheet[key].s = obj[key].fill;
+                        let col_name = XLSX.utils.encode_col(Number(key) - 1); 
+                        // console.log(col_name)
+
+                        // convert the letter to a number
+                        let col_number = XLSX.utils.decode_col(col_name);
+                        
+                        // convert the letter to a number
+                        let row_number = XLSX.utils.decode_row("2"); 
+                        console.log(col_number, row_number)
+
+                        let cell_address = XLSX.utils.encode_cell({c:col_number, r:row_number});
+                        // let cell = XLSX.utils.decode_cell(cell_address);
+
+                        console.log(cell_address)
+                        // console.log(cell)
+                        // worksheet[cell_address].s = obj[key].fill;
+                        worksheet[`${cell_address}`].s = {
+                            fill:{
+                                patternType:"solid",
+                                fgColor:{ rgb: "00dce6f1" },
+                                bgColor:{ rgb: "00dce6f1" } 
+                            }
+                        };
                     }
                 })
             });
