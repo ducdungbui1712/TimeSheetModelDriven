@@ -312,7 +312,7 @@ function groupByDayAndCreatedBy(rawData, month, year) {
 
 // Export data from TimeSheet to Excel
 // Get the val parameter from ExportExcel.html web resource
-const GetReportExcel =  async (val) => {
+const GetReportExcel =  async (val, check) => {
     console.log("Month and year: ",val);
     const date = new Date(val.toLocaleString());
     const month = Number(date.getMonth() + 1); // getMonth() returns month from 0 to 11, so we add 1 to get the correct month number
@@ -358,12 +358,13 @@ const GetReportExcel =  async (val) => {
 
         // Tách join table ra làm 2 view : view employee và view manager
         for (var i = 0; i < jointabledata.length; i++) {
-
-            if(current_User_Id == jointabledata[i]._ownerid_value ){
-                ManagerView.push(jointabledata[i]);
+            if(check == "exportAll"){
+                if(jointabledata[i]._ownerid_value == current_User_Id){
+                    ManagerView.push(jointabledata[i]);
+                }
             }
-            else{
-                if(current_User_Id == jointabledata[i]._createdby_value){
+            if(check == "export"){
+                if(jointabledata[i]._createdby_value == current_User_Id){
                     EmployeeView.push(jointabledata[i]);
                 }
             }
